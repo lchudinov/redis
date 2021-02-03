@@ -102,11 +102,11 @@ ifeq ($(uname_S),OS/390)
     # z/OS
 	CC=c99_x
 	WARN=
-	STD=-DREDIS_STATIC='' -q64 ${REDIS_ENHANCED_ASCII} -qsuppress=CCN4105 -qsuppress=CCN4108 -qfloat=ieee -qgonum -qmakedep -O2 -I../deps/hiredis -I../deps/linenoise -I../deps/lua/src -D_XOPEN_SOURCE=600 -D_ALL_SOURCE
+	STD=-DREDIS_STATIC='' ${REDIS_64BIT} ${REDIS_ENHANCED_ASCII} -qsuppress=CCN4105 -qsuppress=CCN4108 -qfloat=ieee -qgonum -qmakedep -O2 -I../deps/hiredis -I../deps/linenoise -I../deps/lua/src -D_XOPEN_SOURCE=600 -D_ALL_SOURCE
 	DEBUG=
 	INSTALL=cp
 	CFLAGS=$(STD)
-	LDFLAGS+=-q64
+	LDFLAGS+=${REDIS_64BIT}
 else
 	# All the other OSes (notably Linux)
 	FINAL_LDFLAGS+= -rdynamic

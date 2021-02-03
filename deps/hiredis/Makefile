@@ -63,8 +63,8 @@ endif
 ifeq ($(uname_S),OS/390)
     # z/OS
 	CC=c99_x
-    DYLIB_MAKE_CMD=$(CC) -Wl,'dll' -q64 -o $(DYLIBNAME) $(LDFLAGS)
-    REAL_CFLAGS=-O -q64 ${REDIS_ENHANCED_ASCII} -qfloat=ieee -qgonumber -qsuppress=CCN4105 -qsuppress=CCN4108
+    DYLIB_MAKE_CMD=$(CC) -Wl,'dll' ${REDIS_64BIT} -o $(DYLIBNAME) $(LDFLAGS)
+    REAL_CFLAGS=-O ${REDIS_64BIT} ${REDIS_ENHANCED_ASCII} -qfloat=ieee -qgonumber -qsuppress=CCN4105 -qsuppress=CCN4108
     STLIBNAME=$(LIBNAME).$(STLIBSUFFIX)
     STLIB_MAKE_CMD=ar rcs $(STLIBNAME)
 endif
