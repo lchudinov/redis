@@ -57,8 +57,15 @@ static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym);
 ** as an emulation layer on top of native functions.
 ** =========================================================================
 */
-
-#include <dlfcn.h>
+#ifdef __MVS__
+  #define __SUSV3 1
+  #include <dlfcn.h>
+  #define DL_FLAGS RTLD_GLOBAL
+  #undef __SUSV3
+#else
+  #include <dlfcn.h>
+  #define DL_FLAGS RTLD_NOW
+#endif
 
 static void ll_unloadlib (void *lib) {
   dlclose(lib);
@@ -66,7 +73,7 @@ static void ll_unloadlib (void *lib) {
 
 
 static void *ll_load (lua_State *L, const char *path) {
-  void *lib = dlopen(path, RTLD_NOW);
+  void *lib = dlopen(path, DL_FLAGS);
   if (lib == NULL) lua_pushstring(L, dlerror());
   return lib;
 }

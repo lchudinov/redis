@@ -49,6 +49,66 @@
 #endif
 #endif
 
+#ifdef __MVS__
+#define CW_INTRPT    1
+#define CW_CONDVAR  32
+#define CW_TIMEOUT  64
+
+#define JRTIMEOUT   0x81F0211  // wait time exceeded
+
+#ifdef _LP64
+    #pragma map(cond_timed_wait, "BPX4CTW")
+    #pragma linkage(cond_timed_wait,os)
+#else
+    #pragma map(cond_timed_wait, "BPX1CTW")
+    #pragma linkage(cond_timed_wait,os_upstack)
+#endif
+
+void cond_timed_wait(
+    long * seconds,
+    long * nanoseconds,
+    int * event_list,
+    long * seconds_remaining,
+    long * nanoseconds_remaining,
+    int * return_value,
+    int * return_code,
+    int * reason_code
+    );
+
+static int nanosleep(
+    struct timespec * rqtp,
+    struct timespec * rmtp
+    )
+{
+    int return_value = 0;
+    int return_code = 0;
+    int reason_code = 0;
+    struct timespec r = { 0, 0 };
+    int event_list = CW_INTRPT;
+    cond_timed_wait(
+        &rqtp->tv_sec,
+        &rqtp->tv_nsec,
+        &event_list,
+        &r.tv_sec,
+        &r.tv_nsec,
+        &return_value,
+        &return_code,
+        &reason_code
+        );
+    errno = return_code;
+    if ( return_code == EAGAIN && reason_code == JRTIMEOUT )
+    {
+        return_code = 0;
+    }
+    if ( rmtp )
+    {
+        *rmtp = r;
+    }
+    return return_code;
+}
+
+#endif
+
 /* ================================= Debugging ============================== */
 
 /* Compute the sha1 of string at 's' with 'len' bytes long.

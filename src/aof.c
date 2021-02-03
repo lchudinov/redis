@@ -38,7 +38,11 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
+#ifdef __MVS__
+#define MAXPATHLEN 1024
+#else
 #include <sys/param.h>
+#endif
 
 void aofUpdateCurrentSize(void);
 void aofClosePipes(void);
@@ -212,7 +216,7 @@ static void killAppendOnlyChild(void) {
     serverLog(LL_NOTICE,"Killing running AOF rewrite child: %ld",
         (long) server.aof_child_pid);
     if (kill(server.aof_child_pid,SIGUSR1) != -1) {
-        while(wait3(&statloc,0,NULL) != server.aof_child_pid);
+        while(wait(&statloc) != server.aof_child_pid);
     }
     /* Reset the buffer accumulating changes while the child saves. */
     aofRewriteBufferReset();

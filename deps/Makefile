@@ -2,12 +2,22 @@
 
 uname_S:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
-CCCOLOR="\033[34m"
-LINKCOLOR="\033[34;1m"
-SRCCOLOR="\033[33m"
-BINCOLOR="\033[37;1m"
-MAKECOLOR="\033[32;1m"
-ENDCOLOR="\033[0m"
+ifeq ($(uname_S),OS/390)
+    # z/OS
+	CCCOLOR=`tput setaf 4`
+	LINKCOLOR=`tput setaf 4`
+	SRCCOLOR=`tput setaf 3`
+	BINCOLOR=`tput setaf 3`
+	MAKECOLOR=`tput setaf 3`
+	ENDCOLOR=`tput setaf 7`
+else
+	CCCOLOR="\033[34m"
+	LINKCOLOR="\033[34;1m"
+	SRCCOLOR="\033[33m"
+	BINCOLOR="\033[37;1m"
+	MAKECOLOR="\033[32;1m"
+	ENDCOLOR="\033[0m"
+endif
 
 default:
 	@echo "Explicit target required"
@@ -68,7 +78,7 @@ ARFLAGS=rcu
 
 lua: .make-prerequisites
 	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)
-	cd lua/src && $(MAKE) all CFLAGS="$(LUA_CFLAGS)" MYLDFLAGS="$(LUA_LDFLAGS)" AR="$(AR) $(ARFLAGS)"
+	cd lua/src && $(MAKE) mvs CFLAGS="$(LUA_CFLAGS)" MYLDFLAGS="$(LUA_LDFLAGS)" AR="$(AR) $(ARFLAGS)"
 
 .PHONY: lua
 

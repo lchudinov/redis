@@ -47,7 +47,7 @@
  * On NetBSD, _XOPEN_SOURCE undefines _NETBSD_SOURCE and
  * thus hides inet_aton etc.
  */
-#elif !defined(__NetBSD__)
+#elif !defined(__NetBSD__) && !defined(__MVS__)
 #define _XOPEN_SOURCE
 #endif
 

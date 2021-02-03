@@ -37,7 +37,7 @@
 
 #include "hiredis.h"
 
-#if defined(__sun)
+#if defined(__sun) || defined(__MVS__)
 #define AF_LOCAL AF_UNIX
 #endif
 

@@ -10,7 +10,7 @@ PLAT= none
 CC?= gcc
 CFLAGS= -O2 -Wall $(MYCFLAGS)
 AR= ar rcu
-RANLIB= ranlib
+RANLIB= ar rcu
 RM= rm -f
 LIBS= -lm $(MYLIBS)
 
@@ -115,6 +115,9 @@ posix:
 
 solaris:
 	$(MAKE) all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl"
+
+mvs:
+	$(MAKE) all CC="c99_x" CFLAGS="-O -q64 ${REDIS_ENHANCED_ASCII} -DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLDFLAGS="-q64"
 
 # list targets that do not create files (but not all makes understand .PHONY)
 .PHONY: all $(PLATS) default o a clean depend echo none

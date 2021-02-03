@@ -45,6 +45,9 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <math.h>
+#ifdef __MVS__
+#include <strings.h>
+#endif
 
 #include <hiredis.h>
 #include <sds.h> /* use sds.h from hiredis, so that only one set of sds functions will be present in the binary */

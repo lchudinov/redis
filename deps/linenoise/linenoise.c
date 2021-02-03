@@ -205,6 +205,9 @@ void linenoiseSetMultiLine(int ml) {
 /* Return true if the terminal name is in the list of terminals we know are
  * not able to understand basic escape sequences. */
 static int isUnsupportedTerm(void) {
+#if __MVS__ // z/OS does not support ANSI escape codes
+    return 1;
+#endif
     char *term = getenv("TERM");
     int j;
 

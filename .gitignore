@@ -1,5 +1,9 @@
 .*.swp
 *.o
+*.u
+*.a
+*.so
+*.dbg
 *.log
 dump.rdb
 redis-benchmark
@@ -28,3 +32,6 @@ deps/lua/src/liblua.a
 .prerequisites
 *.dSYM
 Makefile.dep
+.vscode
+build-remote.sh
+files.txt

@@ -56,6 +56,11 @@
 #include <locale.h>
 #include <sys/socket.h>
 
+#ifdef __MVS__
+#include <sys/__messag.h>
+#include <pthread.h>
+#endif
+
 /* Our shared "common" objects */
 
 struct sharedObjectsStruct shared;
@@ -1223,7 +1228,7 @@ int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientData) {
         int statloc;
         pid_t pid;
 
-        if ((pid = wait3(&statloc,WNOHANG,NULL)) != 0) {
+        if ((pid = waitpid(-1, &statloc,WNOHANG)) != 0) {
             int exitcode = WEXITSTATUS(statloc);
             int bysignal = 0;
 
@@ -3996,6 +4001,20 @@ int redisIsSupervised(int mode) {
     return 0;
 }
 
+#ifdef __MVS__
+// console listener to shutdown the server with P (stop) console command
+void * consoleListener(void * arg)
+{
+    int concmd = 0;
+    char modstr[128];
+    while (1) {
+        __console(NULL, modstr, &concmd);
+        if (concmd == _CC_stop) {
+            exit(0);
+        }
+    }
+}
+#endif
 
 int main(int argc, char **argv) {
     struct timeval tv;
@@ -4188,7 +4207,11 @@ int main(int argc, char **argv) {
     if (server.maxmemory > 0 && server.maxmemory < 1024*1024) {
         serverLog(LL_WARNING,"WARNING: You specified a maxmemory value that is less than 1MB (current value is %llu bytes). Are you sure this is what you really want?", server.maxmemory);
     }
-
+#ifdef __MVS__
+    // start the console listener thread
+    pthread_t console_thread;
+    pthread_create(&console_thread, NULL, consoleListener, NULL);
+#endif
     aeSetBeforeSleepProc(server.el,beforeSleep);
     aeSetAfterSleepProc(server.el,afterSleep);
     aeMain(server.el);

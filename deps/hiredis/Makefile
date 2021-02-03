@@ -60,6 +60,14 @@ ifeq ($(uname_S),SunOS)
   DYLIB_MAKE_CMD=$(CC) -G -o $(DYLIBNAME) -h $(DYLIB_MINOR_NAME) $(LDFLAGS)
   INSTALL= cp -r
 endif
+ifeq ($(uname_S),OS/390)
+    # z/OS
+	CC=c99_x
+    DYLIB_MAKE_CMD=$(CC) -Wl,'dll' -q64 -o $(DYLIBNAME) $(LDFLAGS)
+    REAL_CFLAGS=-O -q64 ${REDIS_ENHANCED_ASCII} -qfloat=ieee -qgonumber -qsuppress=CCN4105 -qsuppress=CCN4108
+    STLIBNAME=$(LIBNAME).$(STLIBSUFFIX)
+    STLIB_MAKE_CMD=ar rcs $(STLIBNAME)
+endif
 ifeq ($(uname_S),Darwin)
   DYLIBSUFFIX=dylib
   DYLIB_MINOR_NAME=$(LIBNAME).$(HIREDIS_SONAME).$(DYLIBSUFFIX)
@@ -153,7 +161,7 @@ check: hiredis-test
 	kill `cat /tmp/hiredis-test-redis.pid`
 
 .c.o:
-	$(CC) -std=c99 -pedantic -c $(REAL_CFLAGS) $<
+	$(CC) -c $(REAL_CFLAGS) $<
 
 clean:
 	rm -rf $(DYLIBNAME) $(STLIBNAME) $(TESTS) $(PKGCONFNAME) examples/hiredis-example* *.o *.gcda *.gcno *.gcov

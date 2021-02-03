@@ -377,7 +377,7 @@ int clusterLockConfig(char *filename) {
  * and a fcntl-based solution won't help, as we constantly re-open that file,
  * which will release _all_ locks anyway
  */
-#if !defined(__sun)
+#if !defined(__sun) && !defined(__MVS__)
     /* To lock it, we need to open the file in a way it is created if
      * it does not exist, otherwise there is a race condition with other
      * processes. */
@@ -2174,7 +2174,7 @@ void clusterReadHandler(aeEventLoop *el, int fd, void *privdata, int mask) {
         }
 
         nread = read(fd,buf,readlen);
-        if (nread == -1 && errno == EAGAIN) return; /* No more data ready. */
+        if (nread == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) return; /* No more data ready. */
 
         if (nread <= 0) {
             /* I/O error... */

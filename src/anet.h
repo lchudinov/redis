@@ -41,7 +41,7 @@
 #define ANET_NONE 0
 #define ANET_IP_ONLY (1<<0)
 
-#if defined(__sun) || defined(_AIX)
+#if defined(__sun) || defined(_AIX) || defined(__MVS__)
 #define AF_LOCAL AF_UNIX
 #endif
 

@@ -98,9 +98,20 @@ ifeq ($(uname_S),FreeBSD)
 	# FreeBSD
 	FINAL_LIBS+= -lpthread
 else
+ifeq ($(uname_S),OS/390)
+    # z/OS
+	CC=c99_x
+	WARN=
+	STD=-DREDIS_STATIC='' -q64 ${REDIS_ENHANCED_ASCII} -qsuppress=CCN4105 -qsuppress=CCN4108 -qfloat=ieee -qgonum -qmakedep -O2 -I../deps/hiredis -I../deps/linenoise -I../deps/lua/src -D_XOPEN_SOURCE=600 -D_ALL_SOURCE
+	DEBUG=
+	INSTALL=cp
+	CFLAGS=$(STD)
+	LDFLAGS+=-q64
+else
 	# All the other OSes (notably Linux)
 	FINAL_LDFLAGS+= -rdynamic
 	FINAL_LIBS+=-ldl -pthread -lrt
+endif
 endif
 endif
 endif
@@ -129,12 +140,23 @@ REDIS_CC=$(QUIET_CC)$(CC) $(FINAL_CFLAGS)
 REDIS_LD=$(QUIET_LINK)$(CC) $(FINAL_LDFLAGS)
 REDIS_INSTALL=$(QUIET_INSTALL)$(INSTALL)
 
-CCCOLOR="\033[34m"
-LINKCOLOR="\033[34;1m"
-SRCCOLOR="\033[33m"
-BINCOLOR="\033[37;1m"
-MAKECOLOR="\033[32;1m"
-ENDCOLOR="\033[0m"
+
+ifeq ($(uname_S),OS/390)
+    # z/OS
+#	CCCOLOR=`tput setaf 4`
+#	LINKCOLOR=`tput setaf 4`
+#	SRCCOLOR=`tput setaf 3`
+#	BINCOLOR=`tput bold;tput setaf 7`
+#	MAKECOLOR=`tput setaf 3`
+#	ENDCOLOR=`tput sgr0;tput setaf 7`
+else
+	CCCOLOR="\033[34m"
+	LINKCOLOR="\033[34;1m"
+	SRCCOLOR="\033[33m"
+	BINCOLOR="\033[37;1m"
+	MAKECOLOR="\033[32;1m"
+	ENDCOLOR="\033[0m"
+endif
 
 ifndef V
 QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR) 1>&2;
@@ -151,18 +173,14 @@ REDIS_BENCHMARK_NAME=redis-benchmark
 REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o zmalloc.o redis-benchmark.o
 REDIS_CHECK_RDB_NAME=redis-check-rdb
 REDIS_CHECK_AOF_NAME=redis-check-aof
+REDIS_ALL_OBJ=$(REDIS_CLI_OBJ) $(REDIS_SERVER_OBJ) $(REDIS_BENCHMARK_OBJ)
 
 all: $(REDIS_SERVER_NAME) $(REDIS_SENTINEL_NAME) $(REDIS_CLI_NAME) $(REDIS_BENCHMARK_NAME) $(REDIS_CHECK_RDB_NAME) $(REDIS_CHECK_AOF_NAME)
 	@echo ""
 	@echo "Hint: It's a good idea to run 'make test' ;)"
 	@echo ""
 
-Makefile.dep:
-	-$(REDIS_CC) -MM *.c > Makefile.dep 2> /dev/null || true
-
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
--include Makefile.dep
-endif
+-include $(REDIS_SERVER_OBJ:%.o=%.u)
 
 .PHONY: all
 
@@ -180,19 +198,6 @@ persist-settings: distclean
 	-(cd ../deps && $(MAKE) $(DEPENDENCY_TARGETS))
 
 .PHONY: persist-settings
-
-# Prerequisites target
-.make-prerequisites:
-	@touch $@
-
-# Clean everything, persist settings and build dependencies if anything changed
-ifneq ($(strip $(PREV_FINAL_CFLAGS)), $(strip $(FINAL_CFLAGS)))
-.make-prerequisites: persist-settings
-endif
-
-ifneq ($(strip $(PREV_FINAL_LDFLAGS)), $(strip $(FINAL_LDFLAGS)))
-.make-prerequisites: persist-settings
-endif
 
 # redis-server
 $(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ)
@@ -228,7 +233,7 @@ dict-benchmark: dict.c zmalloc.c sds.c siphash.c
 	$(REDIS_CC) -c $<
 
 clean:
-	rm -rf $(REDIS_SERVER_NAME) $(REDIS_SENTINEL_NAME) $(REDIS_CLI_NAME) $(REDIS_BENCHMARK_NAME) $(REDIS_CHECK_RDB_NAME) $(REDIS_CHECK_AOF_NAME) *.o *.gcda *.gcno *.gcov redis.info lcov-html Makefile.dep dict-benchmark
+	rm -rf $(REDIS_SERVER_NAME) $(REDIS_SENTINEL_NAME) $(REDIS_CLI_NAME) $(REDIS_BENCHMARK_NAME) $(REDIS_CHECK_RDB_NAME) $(REDIS_CHECK_AOF_NAME) *.o *.gcda *.gcno *.gcov redis.info lcov-html dict-benchmark *.u
 
 .PHONY: clean
 

@@ -39,6 +39,9 @@
 #include <float.h>
 #include <stdint.h>
 #include <errno.h>
+#ifdef __MVS__
+#include <strings.h>
+#endif
 
 #include "util.h"
 #include "sha1.h"

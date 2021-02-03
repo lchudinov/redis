@@ -48,6 +48,9 @@
 #include <netinet/in.h>
 #include <lua.h>
 #include <signal.h>
+#ifdef __MVS__
+#include <strings.h>
+#endif
 
 typedef long long mstime_t; /* millisecond time type. */
 

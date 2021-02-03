@@ -154,7 +154,7 @@ void setproctitle(const char *fmt, ...);
     defined(MIPSEB) || defined(_MIPSEB) || defined(_IBMR2) || defined(DGUX) ||\
     defined(apollo) || defined(__convex__) || defined(_CRAY) || \
     defined(__hppa) || defined(__hp9000) || \
-    defined(__hp9000s300) || defined(__hp9000s700) || \
+    defined(__hp9000s300) || defined(__hp9000s700) || defined(__MVS__) ||\
     defined (BIT_ZERO_ON_LEFT) || defined(m68k) || defined(__sparc)
 #define BYTE_ORDER	BIG_ENDIAN
 #endif
